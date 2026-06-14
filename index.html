@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linha do Tempo Bíblica</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
+
+  :root {
+    --orange: #F97316;
+    --orange-dark: #C2410C;
+    --orange-light: #FED7AA;
+    --gold: #F59E0B;
+    --gold-light: #FDE68A;
+    --black: #0A0A0A;
+    --dark: #111111;
+    --dark2: #1A1A1A;
+    --dark3: #222222;
+    --text: #FFF7ED;
+    --text-dim: #D4A76A;
+    --green: #22C55E;
+    --red: #EF4444;
+    --shadow-orange: 0 0 20px rgba(249,115,22,0.5);
+    --shadow-gold: 0 0 15px rgba(245,158,11,0.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════
+     STARFIELD CANVAS
+  ═══════════════════════════════════════ */
+  #starfield {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ═══════════════════════════════════════
+     SCREENS
+  ═══════════════════════════════════════ */
+  .screen {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .screen.active { display: flex; }
+
+  /* ═══════════════════════════════════════
+     HOME SCREEN
+  ═══════════════════════════════════════ */
+  #home-screen {
+    background: radial-gradient(ellipse at 50% 30%, rgba(249,115,22,0.08) 0%, transparent 70%);
+  }
+
+  .home-logo {
+    text-align: center;
+    margin-bottom: 8px;
+    animation: floatLogo 3s ease-in-out infinite;
+  }
+
+  @keyframes floatLogo {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .crown-icon {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px var(--gold));
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .title-main {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(32px, 7vw, 64px);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+    text-shadow: 0 0 30px rgba(249,115,22,0.8), 2px 2px 0 var(--orange-dark);
+    letter-spacing: 2px;
+  }
+  .title-accent {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(38px, 8.5vw, 78px);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    display: block;
+    line-height: 1;
+    filter: drop-shadow(0 0 20px rgba(245,158,11,0.8));
+  }
+  .title-sub {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(26px, 5.5vw, 52px);
+    font-weight: 700;
+    color: var(--text);
+    text-shadow: 0 0 20px rgba(249,115,22,0.6), 1px 1px 0 var(--orange-dark);
+    letter-spacing: 3px;
+  }
+
+  .subtitle-text {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(13px, 2.5vw, 17px);
+    color: var(--text-dim);
+    text-align: center;
+    margin: 16px 0 32px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(249,115,22,0.3);
+  }
+
+  /* Bible decoration */
+  .bible-glow {
+    font-size: 48px;
+    display: block;
+    margin: 12px auto;
+    filter: drop-shadow(0 0 20px var(--orange)) drop-shadow(0 0 40px var(--gold));
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%,100% { filter: drop-shadow(0 0 20px var(--orange)) drop-shadow(0 0 40px var(--gold)); }
+    50% { filter: drop-shadow(0 0 30px var(--orange)) drop-shadow(0 0 60px var(--gold)); }
+  }
+
+  /* Buttons */
+  .btn-play {
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 16px 60px;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(18px, 3.5vw, 26px);
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-orange), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 auto 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-play::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.15);
+    transform: skewX(-20deg);
+    animation: shine 3s infinite;
+  }
+  @keyframes shine {
+    0% { left: -60%; }
+    100% { left: 160%; }
+  }
+  .btn-play:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(249,115,22,0.8), var(--shadow-gold);
+  }
+  .btn-play:active { transform: scale(0.97); }
+
+  .home-nav {
+    display: flex;
+    gap: 32px;
+    margin-top: 8px;
+  }
+  .home-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .home-nav-btn:hover { color: var(--orange); }
+  .home-nav-btn span { font-size: 22px; }
+
+  /* Cross decoration at bottom */
+  .cross-row {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 40px;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  .cross {
+    width: 20px;
+    height: 44px;
+    background: var(--orange);
+    border-radius: 2px;
+    position: relative;
+  }
+  .cross::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: -12px;
+    width: 44px; height: 10px;
+    background: var(--orange);
+    border-radius: 2px;
+  }
+
+  /* ═══════════════════════════════════════
+     LEVEL SELECT
+  ═══════════════════════════════════════ */
+  #level-screen {
+    gap: 24px;
+  }
+
+  .screen-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(20px, 4vw, 34px);
+    font-weight: 700;
+    color: var(--orange);
+    text-shadow: var(--shadow-orange);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .level-card {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(249,115,22,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .level-card:hover { border-color: var(--orange); transform: translateY(-3px); box-shadow: var(--shadow-orange); }
+  .level-card:hover::before { opacity: 1; }
+
+  .level-num {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 13px;
+    color: var(--orange);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .level-name {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .level-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .level-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--dark3);
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+  }
+
+  .btn-back {
+    background: transparent;
+    border: 1px solid rgba(249,115,22,0.4);
+    border-radius: 50px;
+    padding: 10px 28px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ═══════════════════════════════════════
+     GAME SCREEN
+  ═══════════════════════════════════════ */
+  #game-screen {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  /* Header bar */
+  .game-header {
+    width: 100%;
+    background: linear-gradient(90deg, var(--dark2), var(--dark3));
+    border-bottom: 2px solid var(--orange);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+  }
+  .game-header .btn-back { padding: 8px 16px; font-size: 11px; }
+  .game-level-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(11px, 2vw, 15px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    flex: 1;
+  }
+  .game-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .stat-chip {
+    background: var(--dark3);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gold);
+  }
+  #timer { color: var(--orange-light); }
+  #timer.danger { color: var(--red); animation: blink 0.5s infinite; }
+  @keyframes blink { 50% { opacity: 0.4; } }
+
+  /* Game body */
+  .game-body {
+    width: 100%;
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .game-instruction {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(12px, 2vw, 15px);
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  /* Timeline slots */
+  .timeline-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+  .timeline-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    padding: 0 20px;
+    position: relative;
+  }
+  .timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--gold));
+    transform: translateY(-50%);
+    z-index: 0;
+    box-shadow: 0 0 10px rgba(249,115,22,0.5);
+  }
+
+  .slot {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed rgba(249,115,22,0.5);
+    border-radius: 12px;
+    background: rgba(249,115,22,0.05);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .slot-num {
+    position: absolute;
+    top: -22px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    width: 28px;
+    height: 28px;
+    background: var(--dark2);
+    border: 2px solid var(--orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slot.drag-over {
+    border-color: var(--gold);
+    background: rgba(245,158,11,0.15);
+    box-shadow: var(--shadow-gold);
+  }
+  .slot.filled {
+    border-color: var(--orange);
+    border-style: solid;
+    background: rgba(249,115,22,0.1);
+  }
+  .slot.correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+  .slot.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); }
+
+  /* Cards pool */
+  .cards-section {
+    width: 100%;
+  }
+  .cards-section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .cards-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    min-height: 110px;
+  }
+
+  .event-card {
+    width: 88px;
+    border: 2px solid rgba(249,115,22,0.4);
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .event-card:hover {
+    border-color: var(--orange);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: var(--shadow-orange);
+    z-index: 100;
+  }
+  .event-card:active { cursor: grabbing; }
+  .event-card.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+
+  .card-emoji {
+    width: 100%;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    background: linear-gradient(180deg, rgba(249,115,22,0.1), transparent);
+  }
+  .card-label {
+    padding: 4px 4px 6px;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+    border-top: 1px solid rgba(249,115,22,0.2);
+  }
+
+  /* Action buttons row */
+  .game-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-hint {
+    background: linear-gradient(135deg, #1A1A1A, #222);
+    border: 1px solid var(--gold);
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    cursor: pointer;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-hint:hover { box-shadow: var(--shadow-gold); border-color: var(--gold-light); }
+  .btn-shuffle {
+    background: linear-gradient(135deg, #1A1A1A, #222);
+    border: 1px solid rgba(249,115,22,0.5);
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-shuffle:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-check {
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-orange);
+  }
+  .btn-check:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(249,115,22,0.8); }
+  .btn-check:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Hint tooltip */
+  .hint-display {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--gold-light);
+    text-align: center;
+    font-style: italic;
+    line-height: 1.5;
+    display: none;
+    box-shadow: var(--shadow-gold);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hint-display.visible { display: block; }
+
+  /* ═══════════════════════════════════════
+     WIN SCREEN
+  ═══════════════════════════════════════ */
+  #win-screen {
+    background: radial-gradient(ellipse at 50% 40%, rgba(249,115,22,0.12) 0%, transparent 70%);
+  }
+
+  .win-trophy {
+    font-size: 80px;
+    display: block;
+    filter: drop-shadow(0 0 30px var(--gold));
+    animation: trophyPulse 1.5s ease-in-out infinite;
+    margin-bottom: 12px;
+  }
+  @keyframes trophyPulse {
+    0%,100% { transform: scale(1) rotate(-3deg); }
+    50% { transform: scale(1.08) rotate(3deg); }
+  }
+
+  .win-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(249,115,22,0.6));
+    margin-bottom: 8px;
+  }
+
+  .win-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(13px, 2.5vw, 17px);
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .score-box {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    padding: 20px 40px;
+    text-align: center;
+    box-shadow: var(--shadow-gold);
+    margin-bottom: 32px;
+  }
+  .score-label {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .score-value {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(40px, 8vw, 68px);
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(245,158,11,0.8);
+    line-height: 1;
+  }
+
+  .win-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-orange);
+  }
+  .btn-next:hover { transform: scale(1.05); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(249,115,22,0.5);
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 999;
+    border-radius: 2px;
+  }
+
+  /* ═══════════════════════════════════════
+     LOSE SCREEN
+  ═══════════════════════════════════════ */
+  #lose-screen {
+    background: radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.08) 0%, transparent 70%);
+  }
+
+  .lose-emoji {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 12px;
+    animation: shakeHead 0.5s ease-in-out 3;
+  }
+  @keyframes shakeHead {
+    0%,100% { transform: rotate(0); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+
+  .lose-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(28px, 6vw, 50px);
+    font-weight: 900;
+    color: var(--red);
+    text-shadow: 0 0 30px rgba(239,68,68,0.6);
+    margin-bottom: 8px;
+  }
+
+  .lose-msg {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(13px, 2.5vw, 16px);
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .lose-answer {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    max-width: 600px;
+    width: 100%;
+  }
+  .lose-answer-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .answer-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .answer-chip {
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .answer-chip span:first-child {
+    background: var(--orange);
+    color: #fff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .lose-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ═══════════════════════════════════════
+     CHARACTERS PANEL
+  ═══════════════════════════════════════ */
+  #chars-screen {
+    gap: 20px;
+    justify-content: flex-start;
+    padding: 24px 20px;
+    overflow-y: auto;
+  }
+
+  .chars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .char-card {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 14px;
+    padding: 16px 10px 12px;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .char-card:hover {
+    border-color: var(--orange);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-orange);
+  }
+  .char-emoji { font-size: 38px; display: block; margin-bottom: 8px; }
+  .char-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .char-desc {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ═══════════════════════════════════════
+     RANKING SCREEN
+  ═══════════════════════════════════════ */
+  #ranking-screen {
+    gap: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .ranking-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 500px;
+  }
+  .rank-item {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .rank-pos {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 20px;
+    font-weight: 900;
+    min-width: 40px;
+    text-align: center;
+  }
+  .rank-pos.gold { color: var(--gold); filter: drop-shadow(0 0 8px var(--gold)); }
+  .rank-pos.silver { color: #C0C0C0; }
+  .rank-pos.bronze { color: #CD7F32; }
+  .rank-pos.normal { color: var(--text-dim); }
+  .rank-name {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .rank-score {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 18px;
+    color: var(--orange);
+  }
+  .empty-ranking {
+    text-align: center;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    padding: 40px 20px;
+  }
+
+  /* ═══════════════════════════════════════
+     FOOTER TICKER
+  ═══════════════════════════════════════ */
+  .footer-ticker {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(90deg, var(--dark2), #1E0C00, var(--dark2));
+    border-top: 1px solid rgba(249,115,22,0.4);
+    padding: 8px 0;
+    overflow: hidden;
+    z-index: 20;
+  }
+  .ticker-content {
+    display: inline-flex;
+    gap: 60px;
+    white-space: nowrap;
+    animation: ticker 20s linear infinite;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+  @keyframes ticker {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-100%); }
+  }
+
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .game-stats { gap: 8px; }
+    .stat-chip { padding: 4px 10px; font-size: 11px; }
+    .home-nav { gap: 20px; }
+    .slot { width: 68px; height: 68px; margin: 0 4px; }
+    .event-card { width: 76px; }
+    .card-emoji { height: 52px; font-size: 28px; }
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 2px solid var(--orange);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-orange), 0 20px 60px rgba(0,0,0,0.8);
+    position: relative;
+  }
+  .modal-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 20px;
+    color: var(--orange);
+    margin-bottom: 14px;
+  }
+  .modal-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .modal-close {
+    background: var(--orange);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 30px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<!-- ═══════════════════════════════════════
+     HOME SCREEN
+═══════════════════════════════════════ -->
+<div id="home-screen" class="screen active">
+  <div class="home-logo">
+    <span class="crown-icon">📖</span>
+    <div class="title-main">LINHA</div>
+    <div class="title-accent">DO TEMPO</div>
+    <div class="title-sub">BÍBLICA <br> DBV MISSIONÁRIO</div>
+  </div>
+
+  <span class="bible-glow">📖</span>
+
+  <p class="subtitle-text">Coloque os eventos bíblicos na ordem correta!</p>
+
+  <button class="btn-play" onclick="showScreen('level-screen')">
+    ▶ &nbsp; JOGAR
+  </button>
+
+  <div class="home-nav">
+    <button class="home-nav-btn" onclick="showScreen('chars-screen')">
+      <span>👥</span>
+      PERSONAGENS
+    </button>
+    <button class="home-nav-btn" onclick="showScreen('ranking-screen')">
+      <span>🏆</span>
+      RANKING
+    </button>
+    <button class="home-nav-btn" onclick="openModal('como-modal')">
+      <span>📜</span>
+      COMO JOGAR
+    </button>
+  </div>
+
+  <div class="cross-row">
+    <div class="cross"></div>
+    <div class="cross"></div>
+    <div class="cross"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LEVEL SELECT SCREEN
+═══════════════════════════════════════ -->
+<div id="level-screen" class="screen">
+  <div class="screen-title">⚔️ ESCOLHA O NÍVEL</div>
+
+  <div class="levels-grid">
+    <div class="level-card" onclick="startGame(0)">
+      <div class="level-num">Nível 1</div>
+      <div class="level-name">Criação até Noé</div>
+      <div class="level-desc">Da criação do mundo ao dilúvio universal — os primeiros eventos da Bíblia.</div>
+      <div class="level-badge">⭐ Fácil</div>
+    </div>
+    <div class="level-card" onclick="startGame(1)">
+      <div class="level-num">Nível 2</div>
+      <div class="level-name">Patriarcas e Êxodo</div>
+      <div class="level-desc">Abraão, Isaque, Jacó, José no Egito e a libertação de Moisés.</div>
+      <div class="level-badge">⭐⭐ Médio</div>
+    </div>
+    <div class="level-card" onclick="startGame(2)">
+      <div class="level-num">Nível 3</div>
+      <div class="level-name">Juízes e Reis</div>
+      <div class="level-desc">Sansão, Davi, Salomão e os grandes reis de Israel.</div>
+      <div class="level-badge">⭐⭐ Médio</div>
+    </div>
+    <div class="level-card" onclick="startGame(3)">
+      <div class="level-num">Nível 4</div>
+      <div class="level-name">Profetas e Cativos</div>
+      <div class="level-desc">Daniel, Jonas, Elias e o cativeiro babilônico.</div>
+      <div class="level-badge">⭐⭐⭐ Difícil</div>
+    </div>
+    <div class="level-card" onclick="startGame(4)">
+      <div class="level-num">Nível 5</div>
+      <div class="level-name">Vida de Jesus</div>
+      <div class="level-desc">Nascimento, ministério, crucificação e ressurreição de Jesus Cristo.</div>
+      <div class="level-badge">⭐⭐⭐ Difícil</div>
+    </div>
+    <div class="level-card" onclick="startGame(5)">
+      <div class="level-num">Nível 6</div>
+      <div class="level-name">Igreja Primitiva</div>
+      <div class="level-desc">Pentecostes, Paulo, Pedro e a expansão do cristianismo.</div>
+      <div class="level-badge">⭐⭐⭐⭐ Expert</div>
+    </div>
+  </div>
+
+  <button class="btn-back" onclick="showScreen('home-screen')">← Voltar</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     GAME SCREEN
+═══════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <button class="btn-back" onclick="confirmBack()">← Sair</button>
+    <div class="game-level-title" id="game-level-title">NÍVEL 1</div>
+    <div class="game-stats">
+      <div class="stat-chip">⭐ <span id="score-display">0</span></div>
+      <div class="stat-chip" id="timer">⏱ <span id="time-display">02:30</span></div>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <p class="game-instruction">Arraste os eventos para colocá-los na ordem correta ⬇️</p>
+
+    <!-- Timeline slots -->
+    <div class="timeline-container">
+      <div class="timeline-track">
+        <div class="timeline-line"></div>
+        <div id="slots-row" style="display:flex;gap:0;position:relative;z-index:1;"></div>
+      </div>
+    </div>
+
+    <!-- Hint -->
+    <div class="hint-display" id="hint-display">💡 Dica aparece aqui</div>
+
+    <!-- Cards pool -->
+    <div class="cards-section">
+      <div class="cards-section-title">— eventos para ordenar —</div>
+      <div class="cards-pool" id="cards-pool"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="game-actions">
+      <button class="btn-hint" onclick="showHint()">💡 Dica</button>
+      <button class="btn-shuffle" onclick="shuffleCards()">🔀 Embaralhar</button>
+      <button class="btn-check" id="btn-check" onclick="checkAnswer()">✅ Verificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     WIN SCREEN
+═══════════════════════════════════════ -->
+<div id="win-screen" class="screen">
+  <span class="win-trophy">🏆</span>
+  <div class="win-title">PARABÉNS!</div>
+  <p class="win-subtitle">Você completou a Linha do Tempo Bíblica!</p>
+
+  <div class="score-box">
+    <div class="score-label">Pontuação Final</div>
+    <div class="score-value" id="final-score">0</div>
+  </div>
+
+  <div class="win-buttons">
+    <button class="btn-next" onclick="nextLevel()">▶ Próximo Nível</button>
+    <button class="btn-secondary" onclick="restartCurrentLevel()">🔄 Jogar Novamente</button>
+    <button class="btn-secondary" onclick="showScreen('home-screen')">🏠 Menu Inicial</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LOSE SCREEN
+═══════════════════════════════════════ -->
+<div id="lose-screen" class="screen">
+  <span class="lose-emoji">😔</span>
+  <div class="lose-title">OPS! ERROU!</div>
+  <p class="lose-msg">A ordem dos eventos não está correta.<br>Continue tentando! Você chegará lá!</p>
+
+  <div class="lose-answer">
+    <div class="lose-answer-title">A ordem correta era:</div>
+    <div class="answer-list" id="correct-answer-list"></div>
+  </div>
+
+  <div class="lose-buttons">
+    <button class="btn-next" onclick="restartCurrentLevel()">🔄 Tentar Novamente</button>
+    <button class="btn-secondary" onclick="showScreen('home-screen')">🏠 Menu Inicial</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CHARACTERS SCREEN
+═══════════════════════════════════════ -->
+<div id="chars-screen" class="screen">
+  <div class="screen-title">👥 PERSONAGENS BÍBLICOS</div>
+  <div class="chars-grid" id="chars-grid"></div>
+  <button class="btn-back" onclick="showScreen('home-screen')">← Voltar</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     RANKING SCREEN
+═══════════════════════════════════════ -->
+<div id="ranking-screen" class="screen">
+  <div class="screen-title">🏆 RANKING</div>
+  <div class="ranking-list" id="ranking-list">
+    <div class="empty-ranking">Nenhuma pontuação ainda.<br>Seja o primeiro a jogar!</div>
+  </div>
+  <button class="btn-secondary" onclick="clearRanking()">🗑 Limpar Ranking</button>
+  <button class="btn-back" onclick="showScreen('home-screen')">← Voltar</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER TICKER
+═══════════════════════════════════════ -->
+<div class="footer-ticker">
+  <span class="ticker-content">
+    APRENDA &bull; DIVIRTA-SE &bull; CONHEÇA A HISTÓRIA DA SALVAÇÃO &bull; LINHA DO TEMPO BÍBLICA &bull; APRENDA &bull; DIVIRTA-SE &bull; CONHEÇA A HISTÓRIA DA SALVAÇÃO &bull; LINHA DO TEMPO BÍBLICA
+  </span>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+<div class="modal-overlay" id="como-modal">
+  <div class="modal-box">
+    <div class="modal-title">📜 Como Jogar</div>
+    <div class="modal-text">
+      1️⃣ Arraste os cartões de eventos para os slots numerados na linha do tempo.<br><br>
+      2️⃣ Coloque-os na ordem cronológica correta, do mais antigo ao mais recente.<br><br>
+      3️⃣ Use <strong style="color:var(--gold)">Dicas</strong> se precisar de ajuda (mas perderá pontos!).<br><br>
+      4️⃣ Clique em <strong style="color:var(--orange)">Verificar</strong> para confirmar sua resposta.<br><br>
+      5️⃣ Quanto mais rápido e sem dicas, maior a pontuação! ⏱
+    </div>
+    <button class="modal-close" onclick="closeModal('como-modal')">Entendido!</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ Sair do Jogo?</div>
+    <div class="modal-text">Seu progresso atual será perdido. Tem certeza?</div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="modal-close" onclick="goBackToMenu()">Sair</button>
+      <button class="btn-secondary" onclick="closeModal('confirm-modal')">Continuar Jogando</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STARFIELD
+// ═══════════════════════════════════════
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 200; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      alpha: Math.random(),
+      speed: Math.random() * 0.008 + 0.002,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function drawStars(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const a = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.speed * 60 + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+
+resizeCanvas();
+initStars();
+window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+requestAnimationFrame(drawStars);
+
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const LEVELS = [
+  {
+    name: 'Nível 1 – Criação até Noé',
+    time: 150,
+    hint: 'Deus criou o mundo em 6 dias. Adão e Eva viveram no Éden. Caim matou Abel. Noé construiu a arca antes do dilúvio.',
+    events: [
+      { emoji: '🌍', label: 'Criação do Mundo' },
+      { emoji: '🌿', label: 'Jardim do Éden' },
+      { emoji: '🐍', label: 'A Queda' },
+      { emoji: '🔥', label: 'Caim e Abel' },
+      { emoji: '🚢', label: 'Arca de Noé' },
+      { emoji: '🌊', label: 'O Dilúvio' },
+      { emoji: '🌈', label: 'Aliança do Arco-Íris' },
+      { emoji: '🏗️', label: 'Torre de Babel' },
+    ]
+  },
+  {
+    name: 'Nível 2 – Patriarcas e Êxodo',
+    time: 150,
+    hint: 'Abraão recebeu a promessa. Isaque, Jacó e José vieram depois. Moisés libertou Israel do Egito.',
+    events: [
+      { emoji: '🌟', label: 'Chamado de Abraão' },
+      { emoji: '👶', label: 'Nascimento de Isaque' },
+      { emoji: '🪜', label: 'Sonho de Jacó' },
+      { emoji: '🎨', label: 'José no Egito' },
+      { emoji: '🔥', label: 'Sarça Ardente' },
+      { emoji: '🦟', label: '10 Pragas' },
+      { emoji: '🌊', label: 'Travessia do Mar Vermelho' },
+      { emoji: '⛰️', label: 'Os 10 Mandamentos' },
+      { emoji: '⛺', label: '40 Anos no Deserto' },
+      { emoji: '🏛️', label: 'Entrada em Canaã' },
+    ]
+  },
+  {
+    name: 'Nível 3 – Juízes e Reis',
+    time: 150,
+    hint: 'Josué conquistou Canaã. Os juízes governaram depois. Davi venceu Golias e Salomão construiu o Templo.',
+    events: [
+      { emoji: '🎺', label: 'Queda de Jericó' },
+      { emoji: '💪', label: 'Sansão e Dalila' },
+      { emoji: '🌾', label: 'Rute e Noemi' },
+      { emoji: '👑', label: 'Reinado de Saul' },
+      { emoji: '🪨', label: 'Davi e Golias' },
+      { emoji: '🎶', label: 'Davi, Rei de Israel' },
+      { emoji: '🏛️', label: 'Templo de Salomão' },
+      { emoji: '✂️', label: 'Divisão do Reino' },
+    ]
+  },
+  {
+    name: 'Nível 4 – Profetas e Cativos',
+    time: 150,
+    hint: 'Elias desafiou os profetas de Baal. Isaías profetizou o Messias. Israel foi ao cativeiro na Babilônia. Daniel sobreviveu na cova dos leões.',
+    events: [
+      { emoji: '🔥', label: 'Elias no Carmelo' },
+      { emoji: '🌪️', label: 'Elias e o Redemoinho' },
+      { emoji: '🐳', label: 'Jonas e o Peixe' },
+      { emoji: '📜', label: 'Isaías Profetiza' },
+      { emoji: '🏰', label: 'Cativeiro na Babilônia' },
+      { emoji: '🦁', label: 'Daniel na Cova dos Leões' },
+      { emoji: '🔥', label: 'Fornalha de Fogo' },
+      { emoji: '🏠', label: 'Reconstrução de Jerusalém' },
+      { emoji: '🎉', label: 'Retorno do Exílio' },
+    ]
+  },
+  {
+    name: 'Nível 5 – Vida de Jesus',
+    time: 150,
+    hint: 'Jesus nasceu em Belém, foi batizado, realizou milagres e morreu na cruz. Ressuscitou ao terceiro dia e ascendeu aos céus.',
+    events: [
+      { emoji: '⭐', label: 'Nascimento de Jesus' },
+      { emoji: '🌊', label: 'Batismo de Jesus' },
+      { emoji: '🏜️', label: 'Tentação no Deserto' },
+      { emoji: '🐟', label: 'Milagre dos Peixes' },
+      { emoji: '🍞', label: 'Multiplicação dos Pães' },
+      { emoji: '🤲', label: 'Ressureição de Lázaro' },
+      { emoji: '🫏', label: 'Entrada em Jerusalém' },
+      { emoji: '🍷', label: 'Última Ceia' },
+      { emoji: '✝️', label: 'Crucificação' },
+      { emoji: '✨', label: 'Ressurreição' },
+      { emoji: '☁️', label: 'Ascensão' },
+    ]
+  },
+  {
+    name: 'Nível 6 – Igreja Primitiva',
+    time: 150,
+    hint: 'O Espírito Santo desceu no Pentecostes. Pedro pregou o primeiro sermão. Paulo foi convertido e espalhou o evangelho pelo mundo.',
+    events: [
+      { emoji: '🕊️', label: 'Pentecostes' },
+      { emoji: '🔊', label: 'Sermão de Pedro' },
+      { emoji: '⚡', label: 'Morte de Estêvão' },
+      { emoji: '🌟', label: 'Conversão de Paulo' },
+      { emoji: '⛓️', label: 'Pedro na Prisão' },
+      { emoji: '✈️', label: '1ª Viagem de Paulo' },
+      { emoji: '📝', label: 'Cartas de Paulo' },
+      { emoji: '🏺', label: '2ª Viagem de Paulo' },
+      { emoji: '⚓', label: 'Paulo em Roma' },
+      { emoji: '📖', label: 'Apocalipse de João' },
+    ]
+  }
+];
+
+const CHARACTERS = [
+  { emoji: '🧔', name: 'Adão', desc: 'Primeiro homem criado por Deus' },
+  { emoji: '👩', name: 'Eva', desc: 'Primeira mulher, mãe dos viventes' },
+  { emoji: '🚢', name: 'Noé', desc: 'Construiu a arca e sobreviveu ao dilúvio' },
+  { emoji: '⭐', name: 'Abraão', desc: 'Pai da fé, recebeu a promessa de Deus' },
+  { emoji: '🏕️', name: 'Isaque', desc: 'Filho da promessa de Abraão' },
+  { emoji: '🪜', name: 'Jacó', desc: 'Pai das 12 tribos de Israel' },
+  { emoji: '🎨', name: 'José', desc: 'Vendido pelos irmãos, tornou-se governador' },
+  { emoji: '🔥', name: 'Moisés', desc: 'Libertou Israel do Egito, recebeu a Lei' },
+  { emoji: '🏹', name: 'Josué', desc: 'Conduziu Israel à Terra Prometida' },
+  { emoji: '💪', name: 'Sansão', desc: 'Juiz de Israel, força sobrenatural' },
+  { emoji: '🌾', name: 'Rute', desc: 'Moabita fiel, bisavó do rei Davi' },
+  { emoji: '📯', name: 'Samuel', desc: 'Profeta e juiz, ungiu os primeiros reis' },
+  { emoji: '👑', name: 'Saul', desc: 'Primeiro rei de Israel' },
+  { emoji: '🪨', name: 'Davi', desc: 'Rei pastor, venceu Golias, escreveu Salmos' },
+  { emoji: '🏛️', name: 'Salomão', desc: 'Rei mais sábio de Israel, construiu o Templo' },
+  { emoji: '🔥', name: 'Elias', desc: 'Profeta de fogo, foi arrebatado ao céu' },
+  { emoji: '🌊', name: 'Eliseu', desc: 'Sucessor de Elias, realizou muitos milagres' },
+  { emoji: '📜', name: 'Isaías', desc: 'Profeta que anunciou o Messias' },
+  { emoji: '😢', name: 'Jeremias', desc: 'Profeta das lamentações' },
+  { emoji: '🦁', name: 'Daniel', desc: 'Sobreviveu à cova dos leões e ao forno' },
+  { emoji: '🐳', name: 'Jonas', desc: 'Engolido por um peixe, pregou em Nínive' },
+  { emoji: '👸', name: 'Ester', desc: 'Rainha que salvou seu povo' },
+  { emoji: '🏗️', name: 'Neemias', desc: 'Reconstruiu os muros de Jerusalém' },
+  { emoji: '⭐', name: 'Jesus', desc: 'Filho de Deus, Salvador do mundo' },
+  { emoji: '👶', name: 'Maria', desc: 'Mãe de Jesus, abençoada entre as mulheres' },
+  { emoji: '📢', name: 'João Batista', desc: 'Precursor de Jesus, pregou o arrependimento' },
+  { emoji: '🎣', name: 'Pedro', desc: 'Apóstolo lider, primeira pedra da Igreja' },
+  { emoji: '✝️', name: 'Paulo', desc: 'Apóstolo dos gentios, escreveu 13 cartas' },
+  { emoji: '💕', name: 'João', desc: 'Apóstolo amado, escreveu o Apocalipse' },
+  { emoji: '📣', name: 'Estêvão', desc: 'Primeiro mártir cristão' },
+  { emoji: '🐑', name: 'Abel', desc: 'Filho de Adão, ofereceu sacrifício agradável' },
+  { emoji: '🌙', name: 'Abraão', desc: 'Chamado da Caldéia, pai de muitas nações' },
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentLevel = 0;
+let score = 0;
+let timeLeft = 150;
+let timerInterval = null;
+let hintsUsed = 0;
+let slotContents = [];
+let dragCard = null;
+let dragOrigin = null; // 'pool' or slot index
+
+// ═══════════════════════════════════════
+// SCREEN NAVIGATION
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'chars-screen') renderChars();
+  if (id === 'ranking-screen') renderRanking();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function confirmBack() { openModal('confirm-modal'); }
+function goBackToMenu() {
+  closeModal('confirm-modal');
+  stopTimer();
+  showScreen('home-screen');
+}
+
+// ═══════════════════════════════════════
+// CHARACTERS RENDER
+// ═══════════════════════════════════════
+function renderChars() {
+  const grid = document.getElementById('chars-grid');
+  grid.innerHTML = CHARACTERS.map(c => `
+    <div class="char-card">
+      <span class="char-emoji">${c.emoji}</span>
+      <div class="char-name">${c.name}</div>
+      <div class="char-desc">${c.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// RANKING
+// ═══════════════════════════════════════
+function getScores() {
+  try { return JSON.parse(localStorage.getItem('ldt_scores') || '[]'); } catch { return []; }
+}
+function saveScore(pts, levelName) {
+  const scores = getScores();
+  scores.push({ pts, level: levelName, date: new Date().toLocaleDateString('pt-BR') });
+  scores.sort((a,b) => b.pts - a.pts);
+  scores.splice(10);
+  try { localStorage.setItem('ldt_scores', JSON.stringify(scores)); } catch {}
+}
+function clearRanking() {
+  try { localStorage.removeItem('ldt_scores'); } catch {}
+  renderRanking();
+}
+function renderRanking() {
+  const list = document.getElementById('ranking-list');
+  const scores = getScores();
+  if (!scores.length) {
+    list.innerHTML = '<div class="empty-ranking">Nenhuma pontuação ainda.<br>Seja o primeiro a jogar!</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  const cls = ['gold','silver','bronze','normal'];
+  list.innerHTML = scores.map((s,i) => `
+    <div class="rank-item">
+      <div class="rank-pos ${cls[Math.min(i,3)]}">${medals[i]||`#${i+1}`}</div>
+      <div class="rank-name">${s.level}</div>
+      <div class="rank-score">${s.pts}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 30) document.getElementById('timer').classList.add('danger');
+    if (timeLeft <= 0) {
+      stopTimer();
+      loseGame(true);
+    }
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+function updateTimerDisplay() {
+  const m = String(Math.floor(timeLeft / 60)).padStart(2,'0');
+  const s = String(timeLeft % 60).padStart(2,'0');
+  document.getElementById('time-display').textContent = `${m}:${s}`;
+}
+
+// ═══════════════════════════════════════
+// GAME LOGIC
+// ═══════════════════════════════════════
+function startGame(levelIndex) {
+  currentLevel = levelIndex;
+  const lvl = LEVELS[levelIndex];
+  score = 0;
+  hintsUsed = 0;
+  timeLeft = lvl.time;
+  slotContents = new Array(lvl.events.length).fill(null);
+
+  document.getElementById('game-level-title').textContent = lvl.name.toUpperCase();
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('timer').classList.remove('danger');
+  document.getElementById('hint-display').classList.remove('visible');
+
+  renderSlots();
+  renderCards(shuffle([...lvl.events.map((e,i) => ({...e, originalIndex: i}))]));
+
+  showScreen('game-screen');
+  startTimer();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleCards() {
+  // Return all cards from slots to pool and reshuffle
+  const lvl = LEVELS[currentLevel];
+  const poolEl = document.getElementById('cards-pool');
+  const allCards = lvl.events.map((e, i) => ({...e, originalIndex: i}));
+  slotContents = new Array(lvl.events.length).fill(null);
+  renderSlots();
+  renderCards(shuffle(allCards));
+}
+
+function renderSlots() {
+  const lvl = LEVELS[currentLevel];
+  const row = document.getElementById('slots-row');
+  row.innerHTML = '';
+  for (let i = 0; i < lvl.events.length; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.slot = i;
+    const num = document.createElement('div');
+    num.className = 'slot-num';
+    num.textContent = i + 1;
+    slot.appendChild(num);
+
+    slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', e => { e.preventDefault(); slot.classList.remove('drag-over'); dropOnSlot(i, slot); });
+
+    row.appendChild(slot);
+  }
+}
+
+function renderCards(cards) {
+  const pool = document.getElementById('cards-pool');
+  pool.innerHTML = '';
+  cards.forEach(card => {
+    const el = createCardEl(card);
+    pool.appendChild(el);
+  });
+}
+
+function createCardEl(card) {
+  const el = document.createElement('div');
+  el.className = 'event-card';
+  el.draggable = true;
+  el.dataset.origIndex = card.originalIndex;
+  el.innerHTML = `
+    <div class="card-emoji">${card.emoji}</div>
+    <div class="card-label">${card.label}</div>
+  `;
+
+  el.addEventListener('dragstart', e => {
+    dragCard = card;
+    dragOrigin = { type: 'pool', el };
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+  // Touch support
+  el.addEventListener('touchstart', touchStart, {passive:true});
+  el.addEventListener('touchmove', touchMove, {passive:false});
+  el.addEventListener('touchend', touchEnd);
+
+  return el;
+}
+
+function dropOnSlot(slotIndex, slotEl) {
+  if (!dragCard) return;
+  
+  // Remove from previous slot if needed
+  if (dragOrigin && dragOrigin.type === 'slot') {
+    slotContents[dragOrigin.index] = null;
+    const prevSlotEl = document.querySelector(`.slot[data-slot="${dragOrigin.index}"]`);
+    if (prevSlotEl) {
+      const mini = prevSlotEl.querySelector('.event-card');
+      if (mini) mini.remove();
+      prevSlotEl.classList.remove('filled');
+    }
+  }
+
+  // If slot occupied, return old card to pool
+  if (slotContents[slotIndex]) {
+    returnCardToPool(slotContents[slotIndex]);
+  }
+
+  // Remove from pool if coming from pool
+  if (dragOrigin && dragOrigin.type === 'pool' && dragOrigin.el) {
+    dragOrigin.el.remove();
+  }
+
+  slotContents[slotIndex] = dragCard;
+  renderCardInSlot(dragCard, slotEl);
+  slotEl.classList.add('filled');
+
+  dragCard = null;
+  dragOrigin = null;
+  updateCheckBtn();
+}
+
+function renderCardInSlot(card, slotEl) {
+  // Remove existing card in slot
+  const existing = slotEl.querySelector('.event-card');
+  if (existing) existing.remove();
+
+  const mini = document.createElement('div');
+  mini.className = 'event-card';
+  mini.draggable = true;
+  mini.dataset.origIndex = card.originalIndex;
+  mini.style.width = '68px';
+  mini.innerHTML = `
+    <div class="card-emoji" style="height:46px;font-size:26px;">${card.emoji}</div>
+    <div class="card-label" style="font-size:9px;">${card.label}</div>
+  `;
+
+  const slotIndex = parseInt(slotEl.dataset.slot);
+  mini.addEventListener('dragstart', e => {
+    dragCard = card;
+    dragOrigin = { type: 'slot', index: slotIndex, el: mini };
+    mini.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  mini.addEventListener('dragend', () => mini.classList.remove('dragging'));
+  
+  // Click to return to pool
+  mini.addEventListener('dblclick', () => {
+    slotContents[slotIndex] = null;
+    mini.remove();
+    slotEl.classList.remove('filled');
+    returnCardToPool(card);
+    updateCheckBtn();
+  });
+
+  mini.addEventListener('touchstart', touchStart, {passive:true});
+  mini.addEventListener('touchmove', touchMove, {passive:false});
+  mini.addEventListener('touchend', touchEnd);
+
+  slotEl.appendChild(mini);
+}
+
+function returnCardToPool(card) {
+  const pool = document.getElementById('cards-pool');
+  const el = createCardEl(card);
+  pool.appendChild(el);
+}
+
+function updateCheckBtn() {
+  const allFilled = slotContents.every(c => c !== null);
+  document.getElementById('btn-check').disabled = !allFilled;
+}
+
+// ═══════════════════════════════════════
+// TOUCH DRAG
+// ═══════════════════════════════════════
+let touchDragEl = null;
+let touchDragCard = null;
+let touchDragOrigin = null;
+let touchClone = null;
+
+function touchStart(e) {
+  const el = e.currentTarget;
+  touchDragCard = {
+    emoji: el.querySelector('.card-emoji').textContent,
+    label: el.querySelector('.card-label').textContent,
+    originalIndex: parseInt(el.dataset.origIndex)
+  };
+  touchDragEl = el;
+  const slotEl = el.closest('.slot');
+  if (slotEl) {
+    touchDragOrigin = { type: 'slot', index: parseInt(slotEl.dataset.slot), el };
+  } else {
+    touchDragOrigin = { type: 'pool', el };
+  }
+}
+
+function touchMove(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  if (!touchClone && touchDragEl) {
+    touchClone = touchDragEl.cloneNode(true);
+    touchClone.style.cssText = `position:fixed;z-index:9999;opacity:0.85;pointer-events:none;width:80px;transform:scale(1.1);`;
+    document.body.appendChild(touchClone);
+    touchDragEl.style.opacity = '0.3';
+  }
+  if (touchClone) {
+    touchClone.style.left = (touch.clientX - 40) + 'px';
+    touchClone.style.top = (touch.clientY - 50) + 'px';
+  }
+  // Highlight slots under touch
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('drag-over'));
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const slot = el ? el.closest('.slot') : null;
+  if (slot) slot.classList.add('drag-over');
+}
+
+function touchEnd(e) {
+  if (touchClone) { touchClone.remove(); touchClone = null; }
+  if (touchDragEl) touchDragEl.style.opacity = '';
+  
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('drag-over'));
+  
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const slot = el ? el.closest('.slot') : null;
+  
+  if (slot && touchDragCard) {
+    dragCard = touchDragCard;
+    dragOrigin = touchDragOrigin;
+    dropOnSlot(parseInt(slot.dataset.slot), slot);
+  }
+  
+  touchDragEl = null;
+  touchDragCard = null;
+  touchDragOrigin = null;
+}
+
+// ═══════════════════════════════════════
+// HINTS
+// ═══════════════════════════════════════
+function showHint() {
+  const lvl = LEVELS[currentLevel];
+  const hintEl = document.getElementById('hint-display');
+  hintEl.textContent = '💡 ' + lvl.hint;
+  hintEl.classList.add('visible');
+  hintsUsed++;
+  score = Math.max(0, score - 50);
+  document.getElementById('score-display').textContent = score;
+}
+
+// ═══════════════════════════════════════
+// CHECK ANSWER
+// ═══════════════════════════════════════
+function checkAnswer() {
+  const lvl = LEVELS[currentLevel];
+  let allCorrect = true;
+
+  slotContents.forEach((card, i) => {
+    const slotEl = document.querySelector(`.slot[data-slot="${i}"]`);
+    slotEl.classList.remove('correct', 'wrong');
+    if (card && card.originalIndex === i) {
+      slotEl.classList.add('correct');
+    } else {
+      slotEl.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  stopTimer();
+
+  if (allCorrect) {
+    const timeBonus = timeLeft * 2;
+    const hintPenalty = hintsUsed * 50;
+    const baseScore = lvl.events.length * 100;
+    score = Math.max(0, baseScore + timeBonus - hintPenalty);
+    setTimeout(() => winGame(), 1000);
+  } else {
+    setTimeout(() => loseGame(false), 1000);
+  }
+}
+
+// ═══════════════════════════════════════
+// WIN / LOSE
+// ═══════════════════════════════════════
+function winGame() {
+  const lvl = LEVELS[currentLevel];
+  document.getElementById('final-score').textContent = score;
+  saveScore(score, lvl.name);
+  showScreen('win-screen');
+  launchConfetti();
+}
+
+function loseGame(timeout) {
+  const lvl = LEVELS[currentLevel];
+  const answerList = document.getElementById('correct-answer-list');
+  answerList.innerHTML = lvl.events.map((e,i) => `
+    <div class="answer-chip">
+      <span>${i+1}</span>
+      <span>${e.emoji} ${e.label}</span>
+    </div>
+  `).join('');
+  showScreen('lose-screen');
+}
+
+function nextLevel() {
+  const next = currentLevel + 1;
+  if (next < LEVELS.length) {
+    startGame(next);
+  } else {
+    showScreen('level-screen');
+  }
+}
+
+function restartCurrentLevel() {
+  startGame(currentLevel);
+}
+
+// ═══════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════
+function launchConfetti() {
+  const colors = ['#F97316','#F59E0B','#FDE68A','#fff','#22C55E','#3B82F6'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random()*100}vw;
+        top: -20px;
+        background: ${colors[Math.floor(Math.random()*colors.length)]};
+        width: ${Math.random()*10+5}px;
+        height: ${Math.random()*10+5}px;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        animation: fall ${Math.random()*2+1.5}s ease-in forwards;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, i * 30);
+  }
+}
+
+// Add confetti fall animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity:1; }
+    100% { transform: translateY(100vh) rotate(${Math.random()*720}deg); opacity:0; }
+  }
+`;
+document.head.appendChild(style);
+
+// Pool drop zone — return card from slot to pool
+document.addEventListener('DOMContentLoaded', () => {
+  const pool = document.getElementById('cards-pool');
+  pool.addEventListener('dragover', e => { e.preventDefault(); });
+  pool.addEventListener('drop', e => {
+    e.preventDefault();
+    if (dragCard && dragOrigin && dragOrigin.type === 'slot') {
+      slotContents[dragOrigin.index] = null;
+      const slotEl = document.querySelector(`.slot[data-slot="${dragOrigin.index}"]`);
+      if (slotEl) {
+        const mini = slotEl.querySelector('.event-card');
+        if (mini) mini.remove();
+        slotEl.classList.remove('filled');
+      }
+      returnCardToPool(dragCard);
+      dragCard = null;
+      dragOrigin = null;
+      updateCheckBtn();
+    }
+  });
+});
+</script>
+</body>
+</html>
