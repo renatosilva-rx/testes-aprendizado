@@ -36,12 +36,5 @@
 - 👥 32 personagens bíblicos
 - 📱 Responsivo para mobile
 
----
-
-## 🚀 Como Rodar
-
-Abra o arquivo `linha-do-tempo-biblica.html` em qualquer navegador moderno. Não requer instalação.
-
----
 
 *Aprenda · Divirta-se · Conheça a história da salvação*
