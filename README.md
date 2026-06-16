@@ -1,9 +1,3 @@
-# 📖 Linha do Tempo Bíblica
-
-> Coloque os eventos bíblicos na ordem correta e aprenda a história da salvação!
-
----
-
 ## 🎮 Como Jogar
 
 1. Escolha um dos **6 níveis** disponíveis
@@ -37,4 +31,5 @@
 - 📱 Responsivo para mobile
 
 
-*Aprenda · Divirta-se · Conheça a história da salvação*
+*Aprenda · Divirta-se · Conheça a história da salvação 🙏*
+=======
