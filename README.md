@@ -37,4 +37,4 @@
 - 📱 Responsivo para mobile
 
 
-*Aprenda · Divirta-se · Conheça a história da salvação*
+*Aprenda · Divirta-se · Conheça a história da salvação 🙏*
